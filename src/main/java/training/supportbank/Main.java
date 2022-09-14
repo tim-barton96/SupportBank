@@ -13,7 +13,6 @@ public class Main {
         //ArrayList<Transcation> listOfTransactions =
 
 
-        System.out.println("test");
         for (int i = 0; i < listOfAccounts.size(); i++) {
             String name = listOfAccounts.get(i).getName();
             System.out.println(name);
@@ -35,7 +34,13 @@ public class Main {
 
             while ((line = reader.readLine()) != null) {
 
+
+
                 String[] transaction = line.split(splitBy);
+
+                if (transaction[0].equals("Date")) {
+                    continue;
+                }
 
                 if (!nameStr.contains(transaction[1])) {
                     accounts.add(new Account(transaction[1]));
@@ -47,9 +52,14 @@ public class Main {
                     nameStr.add(transaction[2]);
                 }
 
-                int cash = Integer.parseInt(transaction[4]);
+                Float cash = Float.parseFloat(transaction[4]);
 
-                System.out.println(cash);
+
+                System.out.println(cash + " " + (cash + 12));
+
+
+
+
 
                 //accounts.stream()
                     //    .filter(x -> x.getName().equals(transaction[1]) )
