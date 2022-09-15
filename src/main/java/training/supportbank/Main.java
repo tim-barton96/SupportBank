@@ -1,11 +1,15 @@
 package training.supportbank;
 
+import org.apache.logging.log4j.LogManager;
+
 import java.io.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.logging.*;
 
 public class Main {
+
     public static void main(String[] args) {
 
         String csv = "/Users/tbart/Training/SupportBank-Resources/Transactions2014.csv";
@@ -117,10 +121,11 @@ public class Main {
 
                 if (transaction[1].equals(name) || transaction[2].equals(name)) {
                     System.out.println("Date: " + transaction[0]
-                            + ", From: " + transaction[1]
-                            + ", To: " + transaction[2]
-                            + ", Narrative: " + transaction[3]
-                            + ", Amount: £" + transaction[4]);
+                            + ",         From: " + transaction[1]
+                            + ",         To: " + transaction[2]
+                            + ",         Amount: £" + transaction[4]
+                            + ",         Narrative: " + transaction[3]
+                            );
                 }
 
             }
