@@ -1,5 +1,8 @@
 package training.supportbank;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,10 +29,10 @@ public class Main {
 
         switch (file.split("\\.")[1]) {
             case "csv":
-                listOfAccounts = accountsCSV(file);
+                listOfAccounts = AccountCreate.accountsCSV(file);
                 break;
             case "json":
-                listOfAccounts = accountsJSON(file);
+                listOfAccounts = AccountCreate.accountsJSON(file);
                 break;
             default:
                 LOGGER.fatal("Incorrect filetype");
@@ -54,71 +57,9 @@ public class Main {
                 System.out.println(name + " £" + balance);
             }
         } else {
-            transactionCSV(choice, file);
+            TranscationRead.transactionCSV(choice, file);
         }
 
-    }
-
-
-    public static ArrayList<Account> accountsCSV(String path) {
-        String line;
-        String splitBy = ",";
-
-
-        ArrayList<Account> accounts = new ArrayList<>();
-
-        ArrayList<String> nameStr = new ArrayList<>();
-
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(path));
-
-            int counter = 0;
-
-            while ((line = reader.readLine()) != null) {
-
-                counter++;
-
-                String[] transaction = line.split(splitBy);
-
-                if (transaction[0].equals("Date")) {
-                    continue;
-                }
-
-                if (!nameStr.contains(transaction[1])) {
-                    accounts.add(new Account(transaction[1]));
-                    nameStr.add(transaction[1]);
-                }
-
-                if (!nameStr.contains(transaction[2])) {
-                    accounts.add(new Account(transaction[2]));
-                    nameStr.add(transaction[2]);
-                }
-
-                BigDecimal cash;
-
-                try {
-                    cash = new BigDecimal(transaction[4]);
-                } catch (NumberFormatException nfe) {
-                    String error = "Incorrect value on line " + counter;
-                    LOGGER.error(error);
-                    continue;
-                }
-
-                accounts.stream()
-                        .filter(x -> x.getName().equals(transaction[1]) )
-                        .forEach(x -> x.addBalance(cash));
-
-                accounts.stream()
-                        .filter(x -> x.getName().equals(transaction[2]))
-                        .forEach(x -> x.subtractBalance(cash));
-
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-
-        }
-
-        return accounts;
     }
 
     public static boolean checkInput(String input, ArrayList<Account> list) {
@@ -137,51 +78,4 @@ public class Main {
         return false;
     }
 
-    public static void transactionCSV(String name, String csv) {
-        String line;
-        String splitBy = ",";
-
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(csv));
-
-            int counter = 0;
-
-            while ((line = reader.readLine()) != null) {
-                counter ++;
-
-                String[] transaction = line.split(splitBy);
-
-                if (transaction[0].equals("Date")) {
-                    continue;
-                }
-
-
-
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-
-                if (transaction[1].equals(name) || transaction[2].equals(name)) {
-                    System.out.println("Date: " + transaction[0]
-                            + ",         From: " + transaction[1]
-                            + ",         To: " + transaction[2]
-                            + ",         Amount: £" + transaction[4]
-                            + ",         Narrative: " + transaction[3]
-                            );
-
-
-                    try {
-                        LocalDate.parse(transaction[0], formatter);
-                    } catch (DateTimeParseException e) {
-                        String warning = "Incorrect date value on line " + counter;
-                        LOGGER.error(warning);
-                    }
-
-                }
-            }
-        }
-            catch(IOException e){
-                e.printStackTrace();
-
-            }
-        }
     }
