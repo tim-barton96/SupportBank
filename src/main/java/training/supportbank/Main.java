@@ -143,7 +143,7 @@ public class Main {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
                 try {
-                    LocalDate date = LocalDate.parse(transaction[0], formatter);
+                    LocalDate.parse(transaction[0], formatter);
                 } catch (DateTimeParseException e) {
                     String warning = "Incorrect date value on line " + counter;
                     LOGGER.error(warning);
