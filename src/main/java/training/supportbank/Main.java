@@ -22,7 +22,19 @@ public class Main {
 
         String csv = "/Users/tbart/Training/SupportBank-Resources/DodgyTransactions2015.csv";
 
-        ArrayList<Account> listOfAccounts = accountsCSV(csv);
+        ArrayList<Account> listOfAccounts;
+
+        switch (csv.split("\\.")[1]) {
+            case "csv":
+                listOfAccounts = accountsCSV(csv);
+                break;
+
+            default:
+                LOGGER.fatal("Incorrect filetype");
+                return;
+
+        }
+
 
         Scanner scanner = new Scanner(System.in);
 
@@ -59,6 +71,7 @@ public class Main {
             BufferedReader reader = new BufferedReader(new FileReader(path));
 
             int counter = 0;
+
             while ((line = reader.readLine()) != null) {
 
                 counter++;
@@ -97,7 +110,6 @@ public class Main {
                         .filter(x -> x.getName().equals(transaction[2]))
                         .forEach(x -> x.subtractBalance(cash));
 
-
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -131,6 +143,7 @@ public class Main {
             BufferedReader reader = new BufferedReader(new FileReader(csv));
 
             int counter = 0;
+
             while ((line = reader.readLine()) != null) {
                 counter ++;
 
@@ -140,14 +153,9 @@ public class Main {
                     continue;
                 }
 
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-                try {
-                    LocalDate.parse(transaction[0], formatter);
-                } catch (DateTimeParseException e) {
-                    String warning = "Incorrect date value on line " + counter;
-                    LOGGER.error(warning);
-                }
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
 
                 if (transaction[1].equals(name) || transaction[2].equals(name)) {
@@ -157,15 +165,21 @@ public class Main {
                             + ",         Amount: £" + transaction[4]
                             + ",         Narrative: " + transaction[3]
                             );
-                }
 
+
+                    try {
+                        LocalDate.parse(transaction[0], formatter);
+                    } catch (DateTimeParseException e) {
+                        String warning = "Incorrect date value on line " + counter;
+                        LOGGER.error(warning);
+                    }
+
+                }
             }
         }
             catch(IOException e){
                 e.printStackTrace();
 
             }
-
-
         }
     }
