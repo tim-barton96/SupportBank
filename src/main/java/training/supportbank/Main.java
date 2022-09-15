@@ -1,7 +1,9 @@
 package training.supportbank;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
@@ -10,13 +12,26 @@ public class Main {
 
         ArrayList<Account> listOfAccounts = accountsCSV(csv);
 
-        //ArrayList<Transcation> listOfTransactions =
+        Scanner scanner = new Scanner(System.in);
 
+        String choice;
 
-        for (int i = 0; i < listOfAccounts.size(); i++) {
-            String name = listOfAccounts.get(i).getName();
-            System.out.println(name);
+        do {
+            System.out.println("Please type 'All' or an account name.");
+            choice = scanner.nextLine();
+        } while (!checkInput(choice, listOfAccounts));
+
+        if (choice.equals("All") || choice.equals("all")) {
+            for (Account account : listOfAccounts) {
+                String name = account.getName();
+                BigDecimal balance = account.getBalance();
+                System.out.println(name + " £" + balance);
+            }
         }
+
+        transactionCSV(choice, csv);
+
+
     }
 
 
@@ -34,8 +49,6 @@ public class Main {
 
             while ((line = reader.readLine()) != null) {
 
-
-
                 String[] transaction = line.split(splitBy);
 
                 if (transaction[0].equals("Date")) {
@@ -52,18 +65,15 @@ public class Main {
                     nameStr.add(transaction[2]);
                 }
 
-                Float cash = Float.parseFloat(transaction[4]);
+                BigDecimal cash = new BigDecimal(transaction[4]);
 
+                accounts.stream()
+                        .filter(x -> x.getName().equals(transaction[1]) )
+                        .forEach(x -> x.addBalance(cash));
 
-                System.out.println(cash + " " + (cash + 12));
-
-
-
-
-
-                //accounts.stream()
-                    //    .filter(x -> x.getName().equals(transaction[1]) )
-                       // .forEach(x -> x.addBalance(Integer.parseInt(transaction[4])));
+                accounts.stream()
+                        .filter(x -> x.getName().equals(transaction[2]))
+                        .forEach(x -> x.subtractBalance(cash));
 
 
             }
@@ -74,4 +84,52 @@ public class Main {
 
         return accounts;
     }
-}
+
+    public static boolean checkInput(String input, ArrayList<Account> list) {
+
+        if (input.equals("All") || input.equals("all")) {
+            return true;
+        }
+
+        for (Account account: list) {
+            if (account.getName().equals(input)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static void transactionCSV(String name, String csv) {
+        String line;
+        String splitBy = ",";
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(csv));
+
+            while ((line = reader.readLine()) != null) {
+
+                String[] transaction = line.split(splitBy);
+
+                if (transaction[0].equals("Date")) {
+                    continue;
+                }
+
+                if (transaction[1].equals(name) || transaction[2].equals(name)) {
+                    System.out.println("Date: " + transaction[0]
+                            + ", From: " + transaction[1]
+                            + ", To: " + transaction[2]
+                            + ", Narrative: " + transaction[3]
+                            + ", Amount: £" + transaction[4]);
+                }
+
+            }
+        }
+            catch(IOException e){
+                e.printStackTrace();
+
+            }
+
+
+        }
+    }
