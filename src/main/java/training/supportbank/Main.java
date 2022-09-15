@@ -1,18 +1,26 @@
 package training.supportbank;
 
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.*;
 
 public class Main {
 
+    private static final Logger LOGGER = LogManager.getLogger();
+
+
     public static void main(String[] args) {
 
-        String csv = "/Users/tbart/Training/SupportBank-Resources/Transactions2014.csv";
+
+        String csv = "/Users/tbart/Training/SupportBank-Resources/DodgyTransactions2015.csv";
 
         ArrayList<Account> listOfAccounts = accountsCSV(csv);
 
@@ -31,10 +39,9 @@ public class Main {
                 BigDecimal balance = account.getBalance();
                 System.out.println(name + " £" + balance);
             }
+        } else {
+            transactionCSV(choice, csv);
         }
-
-        transactionCSV(choice, csv);
-
 
     }
 
@@ -51,7 +58,10 @@ public class Main {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(path));
 
+            int counter = 0;
             while ((line = reader.readLine()) != null) {
+
+                counter++;
 
                 String[] transaction = line.split(splitBy);
 
@@ -69,7 +79,15 @@ public class Main {
                     nameStr.add(transaction[2]);
                 }
 
-                BigDecimal cash = new BigDecimal(transaction[4]);
+                BigDecimal cash;
+
+                try {
+                    cash = new BigDecimal(transaction[4]);
+                } catch (NumberFormatException nfe) {
+                    String error = "Incorrect value on line " + counter;
+                    LOGGER.error(error);
+                    continue;
+                }
 
                 accounts.stream()
                         .filter(x -> x.getName().equals(transaction[1]) )
@@ -101,6 +119,7 @@ public class Main {
             }
         }
 
+        LOGGER.error("Incorrect input");
         return false;
     }
 
@@ -111,13 +130,25 @@ public class Main {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(csv));
 
+            int counter = 0;
             while ((line = reader.readLine()) != null) {
+                counter ++;
 
                 String[] transaction = line.split(splitBy);
 
                 if (transaction[0].equals("Date")) {
                     continue;
                 }
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+                try {
+                    LocalDate date = LocalDate.parse(transaction[0], formatter);
+                } catch (DateTimeParseException e) {
+                    String warning = "Incorrect date value on line " + counter;
+                    LOGGER.error(warning);
+                }
+
 
                 if (transaction[1].equals(name) || transaction[2].equals(name)) {
                     System.out.println("Date: " + transaction[0]
