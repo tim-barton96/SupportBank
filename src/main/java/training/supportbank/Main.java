@@ -20,15 +20,17 @@ public class Main {
     public static void main(String[] args) {
 
 
-        String csv = "/Users/tbart/Training/SupportBank-Resources/DodgyTransactions2015.csv";
+        String file = args[0];
 
         ArrayList<Account> listOfAccounts;
 
-        switch (csv.split("\\.")[1]) {
+        switch (file.split("\\.")[1]) {
             case "csv":
-                listOfAccounts = accountsCSV(csv);
+                listOfAccounts = accountsCSV(file);
                 break;
-
+            case "json":
+                listOfAccounts = accountsJSON(file);
+                break;
             default:
                 LOGGER.fatal("Incorrect filetype");
                 return;
@@ -52,7 +54,7 @@ public class Main {
                 System.out.println(name + " £" + balance);
             }
         } else {
-            transactionCSV(choice, csv);
+            transactionCSV(choice, file);
         }
 
     }
