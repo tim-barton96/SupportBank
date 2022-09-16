@@ -1,18 +1,19 @@
 package training.supportbank;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializer;
+import com.google.gson.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class AccountCreate {
 
@@ -79,18 +80,63 @@ public class AccountCreate {
         return accounts;
     }
 
-    public static ArrayList<Account> accountsJSON(String json) {
+    public static ArrayList<Account> accountsJSON(String json)  {
 
         ArrayList<Account> accounts = new ArrayList<>();
 
-        accounts.add(new Account("tim"));
+        ArrayList<String> nameStr = new ArrayList<>();
 
-//        GsonBuilder gsonBuilder = new GsonBuilder();
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-//        gsonBuilder.registerTypeAdapter(LocalDate.class, (JsonDeserializer<LocalDate>) (jsonElement, type, jsonDeserializationContext) ->
-//                LocalDate.parse(jsonElement, formatter)
-//        );
-//        Gson gson = gsonBuilder.create();
+        Gson gson = new Gson();
+
+        JsonObject[] array;
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(json));
+
+            array = gson.fromJson(reader, JsonObject[].class);
+
+            int errorCounter = 0;
+
+            for (JsonObject object: array) {
+
+                errorCounter++;
+
+                String from = object.get("fromAccount").toString().replace("\"", "");
+                String to = object.get("toAccount").toString().replace("\"", "");
+
+                if (!nameStr.contains(from)) {
+                    accounts.add(new Account(from));
+                    nameStr.add(from);
+                }
+
+                if (!nameStr.contains(to)){
+                    accounts.add(new Account(to));
+                    nameStr.add(to);
+                }
+                BigDecimal cash;
+                try {
+                    cash = new BigDecimal(object.get("amount").toString());
+                } catch (NumberFormatException nfe) {
+                    String error = "Incorrect value on line " + errorCounter;
+                    LOGGER.error(error);
+                    continue;
+                }
+
+                accounts.stream()
+                        .filter(x -> x.getName().equals(from) )
+                        .forEach(x -> x.addBalance(cash));
+
+                accounts.stream()
+                        .filter(x -> x.getName().equals(to))
+                        .forEach(x -> x.subtractBalance(cash));
+            }
+
+        } catch (FileNotFoundException e) {
+            LOGGER.fatal("File not found");
+        }
+
+
+
         return accounts;
     }
 }

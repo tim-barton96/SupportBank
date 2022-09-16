@@ -1,19 +1,11 @@
 package training.supportbank;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.logging.*;
 
 public class Main {
 
@@ -25,9 +17,11 @@ public class Main {
 
         String file = args[0];
 
+        String filetype = file.split("\\.")[1];
+
         ArrayList<Account> listOfAccounts;
 
-        switch (file.split("\\.")[1]) {
+        switch (filetype) {
             case "csv":
                 listOfAccounts = AccountCreate.accountsCSV(file);
                 break;
@@ -57,7 +51,17 @@ public class Main {
                 System.out.println(name + " £" + balance);
             }
         } else {
-            TranscationRead.transactionCSV(choice, file);
+
+            switch (filetype) {
+                case "csv" :
+                    TransactionRead.readCSV(choice, file);
+                    break;
+                case "json" :
+                    TransactionRead.readJson(choice, file);
+                    break;
+                default:
+                    LOGGER.fatal("Incorrect filetype");
+            }
         }
 
     }
