@@ -70,6 +70,7 @@ public class Main {
             }
         }
 
+        System.out.println("Application closing, bye!");
     }
 
     public static boolean checkInput(String input, ArrayList<Account> list) {
