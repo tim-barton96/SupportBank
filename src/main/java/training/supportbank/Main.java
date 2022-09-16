@@ -28,6 +28,9 @@ public class Main {
             case "json":
                 listOfAccounts = AccountCreate.accountsJSON(file);
                 break;
+            case "xml" :
+                listOfAccounts = AccountCreate.accountsXML(file);
+                break;
             default:
                 LOGGER.fatal("Incorrect filetype");
                 return;
@@ -58,6 +61,9 @@ public class Main {
                     break;
                 case "json" :
                     TransactionRead.readJson(choice, file);
+                    break;
+                case "xml" :
+                    TransactionRead.readXML(choice, file);
                     break;
                 default:
                     LOGGER.fatal("Incorrect filetype");

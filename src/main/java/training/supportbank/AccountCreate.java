@@ -3,11 +3,16 @@ package training.supportbank;
 import com.google.gson.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -139,4 +144,69 @@ public class AccountCreate {
 
         return accounts;
     }
-}
+
+
+    public static ArrayList<Account> accountsXML(String xml) {
+
+        ArrayList<Account> accounts = new ArrayList<>();
+
+        ArrayList<String> nameStr = new ArrayList<>();
+
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        try {
+
+            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+
+            Document document = documentBuilder.parse(new File(xml));
+
+            NodeList listOfTransactions = document.getElementsByTagName("SupportTransaction");
+
+            for (int i = 0; i < listOfTransactions.getLength(); i++) {
+
+                Node node = listOfTransactions.item(i);
+
+                if (node.getNodeType() == Node.ELEMENT_NODE) {
+
+                    Element element = (Element) node;
+
+                    String amount = element.getElementsByTagName("Value").item(0).getTextContent();
+                    String from = element.getElementsByTagName("From").item(0).getTextContent();
+                    String to = element.getElementsByTagName("To").item(0).getTextContent();
+
+                    if (!nameStr.contains(from)) {
+                        accounts.add(new Account(from));
+                        nameStr.add(from);
+                    }
+
+                    if (!nameStr.contains(to)) {
+                        accounts.add(new Account(to));
+                        nameStr.add(to);
+                    }
+
+                    BigDecimal cash;
+
+                    try {
+                        cash = new BigDecimal(amount);
+                    } catch (NumberFormatException nfe) {
+                        String error = "Incorrect value";
+                        LOGGER.error(error);
+                        continue;
+                    }
+
+                    accounts.stream()
+                            .filter(x -> x.getName().equals(from))
+                            .forEach(x -> x.addBalance(cash));
+
+                    accounts.stream()
+                            .filter(x -> x.getName().equals(to))
+                            .forEach(x -> x.subtractBalance(cash));
+
+
+                }
+                }
+            } catch(ParserConfigurationException | SAXException | IOException e){
+            LOGGER.fatal("Invalid XML file");
+            }
+            return accounts;
+        }
+    }
